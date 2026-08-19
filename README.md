@@ -225,136 +225,273 @@ Kategori disimpan secara modular pada `server/data/store.js` dan disediakan mela
 
 ---
 
-## 9. CI/CD Pipeline (GitHub Actions)
+## 9. Tutorial Deploy ke Proxmox VE (Single LXC Container) dengan CI/CD & Load Balancer
 
-WargaKonek dilengkapi dengan pipeline otomatisasi **Continuous Integration (CI)** dan **Continuous Deployment (CD)** menggunakan **GitHub Actions**.
+Panduan komprehensif implementasi arsitektur **High Availability (HA)** untuk aplikasi WargaKonek di dalam **Single LXC Container (Proxmox VE)** menggunakan **Nginx Load Balancer** dan otomatisasi **GitHub Actions CI/CD**.
 
-### Alur Pipeline
+---
+
+### A. Arsitektur Infrastruktur (Single LXC Container)
+
+Dalam arsitektur ini, seluruh stack (Nginx Load Balancer dan 2 Instance Container App) berjalan di dalam **satu LXC Container di Proxmox VE** yang sangat hemat resource namun tetap memiliki redundansi dan failover:
 
 ```text
-Developer
-   │
-   │ git push / pull request
-   ▼
-GitHub Repository
-   │
-   ├── [CI Workflow] (.github/workflows/ci.yml)
-   │    ├── 1. Checkout Code
-   │    ├── 2. Setup Node.js 18 & Cache npm
-   │    ├── 3. npm ci (Install Dependency)
-   │    ├── 4. Lint Check (if configured)
-   │    ├── 5. npm test (11 Automated API & Route Tests)
-   │    ├── 6. Docker Build Image (Tag: wargakonek-ci:<sha>)
-   │    ├── 7. Run Test Container
-   │    ├── 8. Health Check (/api/health polling)
-   │    └── 9. Cleanup Container
-   │
-   └── [CD Workflow] (.github/workflows/cd.yml) - Hanya berjalan saat CI sukses di branch 'main'
-        ├── 1. Checkout Code
-        ├── 2. Login ke GitHub Container Registry (GHCR)
-        ├── 3. Build & Tag Docker Image (:latest & :<sha>)
-        ├── 4. Push Image ke ghcr.io/<owner>/wargakonek
-        ├── 5. Connect SSH ke Server Deployment
-        ├── 6. docker compose pull (Ambil image versi SHA terbaru)
-        ├── 7. docker compose up -d (Restart container aplikasi)
-        ├── 8. Prune Dangling Images
-        └── 9. Production Health Check (Verifikasi HTTP 200 & success: true)
+                             [ Public Traffic / Internet ]
+                                           │
+                                           ▼
+                             ┌──────────────────────────┐
+                             │     Router / Gateway     │
+                             │  (Port Forward 80 & 443) │
+                             └─────────────┬────────────┘
+                                           │
+                     Proxmox VE Node (PVE Virtual Bridge: vmbr0)
+                                           │
+  ┌────────────────────────────────────────┴────────────────────────────────────────┐
+  │  PROXMOX LXC CONTAINER 100 (Ubuntu 24.04 LTS / IP: 192.168.1.50)                │
+  │  Features: Nesting=1, Keyctl=1                                                  │
+  │                                                                                 │
+  │  ┌───────────────────────────────────────────────────────────────────────────┐  │
+  │  │                      Nginx Load Balancer (Port: 80 / 443)                 │  │
+  │  │                  (Upstream Least-Connection & Failover)                   │  │
+  │  └───────────────────────┬───────────────────────────┬───────────────────────┘  │
+  │                          │                           │                          │
+  │                          ▼                           ▼                          │
+  │             ┌─────────────────────────┐ ┌─────────────────────────┐             │
+  │             │   App Replica 1 (app1)  │ │   App Replica 2 (app2)  │             │
+  │             │   Port Internal: 3001   │ │   Port Internal: 3002   │             │
+  │             │   Health: /api/health   │ │   Health: /api/health   │             │
+  │             └─────────────────────────┘ └─────────────────────────┘             │
+  └────────────────────────────────────────┬────────────────────────────────────────┘
+                                           │
+                                  [ GitHub Actions CD ]
+                               (Deploy via SSH & Pull GHCR)
 ```
 
 ---
 
-### 1. Continuous Integration (CI)
+### B. Langkah 1: Pembuatan & Konfigurasi LXC Container di Proxmox VE
 
-File: `.github/workflows/ci.yml`
+1. **Download Template OS di Proxmox**:
+   - Buka Proxmox Web GUI > Storage `local` > **CT Templates** > Cari `ubuntu-24.04-standard` (atau Debian 12) lalu klik **Download**.
 
-* **Triggers**:
-  * `push` ke branch `main`
-  * `pull_request` ke branch `main`
-* **Validasi yang Dijalankan**:
-  1. **Dependency Installation**: Menggunakan `npm ci` untuk instalasi deterministik.
-  2. **Automated Unit & Integration Tests**: Menjalankan test suite berbasis native Node 18 (`tests/api.test.js`) mencakup endpoint `/api/health`, `/api/stats`, `/api/report-categories`, `/api/announcements`, `/api/events`, `/api/services`, `/api/reports`, `/api/contact`, dan routing homepage.
-  3. **Docker Build & Container Test**: Memastikan `Dockerfile` dapat dibuild dan container dapat berjalan serta merespon `/api/health` dengan kode status `200` dan body `{"success": true, ...}` sebelum kode dapat dimerge/dideploy.
+2. **Buat LXC Container (Create CT)**:
+   - **CT ID**: `100` (atau sesuai preferensi)
+   - **Hostname**: `wargakonek-prod`
+   - **Password**: Masukkan password root aman
+   - **Template**: Pilih template Ubuntu 24.04
+   - **Disk**: 20 GB (atau sesuai kebutuhan)
+   - **CPU**: 2 Core
+   - **Memory**: RAM 2048 MB (2 GB), Swap 1024 MB
+   - **Network**:
+     - Bridge: `vmbr0`
+     - IPv4: Static (contoh `192.168.1.50/24`)
+     - Gateway: `192.168.1.1` (IP Router Anda)
+     - DNS: `8.8.8.8` atau DNS Lokal
 
----
-
-### 2. Continuous Deployment (CD)
-
-File: `.github/workflows/cd.yml`
-
-* **Triggers**:
-  * Otomatis setelah workflow `CI` berhasil pada branch `main` (`workflow_run`)
-  * Manual trigger via `workflow_dispatch`
-* **Container Registry**: **GitHub Container Registry (GHCR)** (`ghcr.io`).
-  Setiap image ditandai dengan dua tag:
-  * `latest`
-  * `<commit-sha>` (contoh: `ghcr.io/username/wargakonek:a91c2de...`)
-* **Deployment Method**: SSH remote execution ke Linux VPS/server.
-* **Production Health Check**: Melakukan verifikasi langsung ke service aplikasi yang berjalan di server untuk memastikan zero-downtime dan memastikan status server benar-benar beroperasi normal.
+3. **Aktifkan Nesting & Keyctl (Wajib untuk Docker di LXC Proxmox)**:
+   - Pilih Container `100` di Proxmox GUI > **Options** > **Features** > Klik **Edit**.
+   - Centang **Nesting** (`nesting=1`) dan **Keyctl** (`keyctl=1`).
+   - Klik **OK**, lalu jalankan container (**Start**).
 
 ---
 
-### 3. Konfigurasi GitHub Secrets
+### C. Langkah 2: Setup Docker & User Deployment di LXC
 
-Tambahkan secrets berikut pada repository GitHub Anda melalui menu **Settings > Secrets and variables > Actions**:
+Buka Proxmox Console untuk Container `100` dan jalankan:
 
-| Nama Secret | Deskripsi | Contoh Nilai |
-|---|---|---|
-| `DEPLOY_HOST` | IP publik atau Domain server VPS | `103.xxx.xxx.xxx` atau `server.desa.id` |
-| `DEPLOY_USER` | Username SSH untuk deployment | `ubuntu` atau `deployer` |
-| `DEPLOY_SSH_KEY` | Private SSH Key (format OpenSSH / PEM) | `-----BEGIN OPENSSH PRIVATE KEY-----...` |
-| `DEPLOY_PATH` | Path direktori kerja project di server | `/home/ubuntu/wargakonek` atau `/var/www/wargakonek` |
+```bash
+# 1. Update paket sistem
+apt update && apt upgrade -y
 
-> [!WARNING]
-> Jangan pernah membagikan atau meng-commit nilai Secret ke dalam repositori publik!
+# 2. Install dependensi dan Docker Engine + Docker Compose
+apt install -y curl git ufw sudo docker.io docker-compose-v2
+
+# 3. Buat user deployment khusus (non-root)
+adduser deployer
+usermod -aG sudo,docker deployer
+
+# 4. Siapkan direktori SSH untuk user deployer
+mkdir -p /home/deployer/.ssh
+chmod 700 /home/deployer/.ssh
+
+# Tambahkan Public SSH Key Anda ke authorized_keys
+cat << 'EOF' >> /home/deployer/.ssh/authorized_keys
+<PASTE_PUBLIC_SSH_KEY_ANDA_DI_SINI>
+EOF
+
+chmod 600 /home/deployer/.ssh/authorized_keys
+chown -R deployer:deployer /home/deployer/.ssh
+```
 
 ---
 
-### 4. Panduan Persiapan Server Deployment (VPS Linux)
+### D. Langkah 3: Konfigurasi Docker Compose & Load Balancer (Nginx)
 
-1. **Install Docker & Docker Compose**:
+Login sebagai user `deployer` dan siapkan project:
+
+```bash
+su - deployer
+mkdir -p /home/deployer/wargakonek
+cd /home/deployer/wargakonek
+```
+
+1. **Buat file `nginx.conf` untuk Load Balancer**:
    ```bash
-   sudo apt update
-   sudo apt install -y docker.io docker-compose-v2
-   sudo usermod -aG docker $USER
+   cat << 'EOF' > /home/deployer/wargakonek/nginx.conf
+   events { worker_connections 1024; }
+
+   http {
+       upstream wargakonek_cluster {
+           # Algoritma pembagian beban: least_conn
+           least_conn;
+
+           # Load balance ke dua instance app container
+           server app1:3000 max_fails=3 fail_timeout=10s;
+           server app2:3000 max_fails=3 fail_timeout=10s;
+       }
+
+       server {
+           listen 80;
+           server_name _;
+
+           # Reverse proxy ke upstream cluster
+           location / {
+               proxy_pass http://wargakonek_cluster;
+               proxy_http_version 1.1;
+
+               proxy_set_header Host $host;
+               proxy_set_header X-Real-IP $remote_addr;
+               proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+               proxy_set_header X-Forwarded-Proto $scheme;
+               proxy_set_header Upgrade $http_upgrade;
+               proxy_set_header Connection 'upgrade';
+
+               # Failover otomatis jika salah satu instance sedang update/down
+               proxy_connect_timeout 2s;
+               proxy_read_timeout 60s;
+               proxy_next_upstream error timeout http_500 http_502 http_503 http_504;
+           }
+
+           location /api/health {
+               proxy_pass http://wargakonek_cluster/api/health;
+               proxy_connect_timeout 2s;
+           }
+       }
+   }
+   EOF
    ```
 
-2. **Buat Direktori Proyek di Server**:
-   ```bash
-   mkdir -p /home/ubuntu/wargakonek
-   cd /home/ubuntu/wargakonek
+2. **Siapkan `compose.prod.yaml`**:
+   ```yaml
+   services:
+     # Nginx Load Balancer
+     lb:
+       image: nginx:alpine
+       container_name: wargakonek-lb
+       restart: unless-stopped
+       ports:
+         - "80:80"
+       volumes:
+         - ./nginx.conf:/etc/nginx/nginx.conf:ro
+       depends_on:
+         - app1
+         - app2
+
+     # Instance 1
+     app1:
+       image: ${APP_IMAGE:-ghcr.io/your-username/wargakonek:latest}
+       container_name: wargakonek-app-1
+       restart: unless-stopped
+       environment:
+         - NODE_ENV=production
+         - PORT=3000
+       healthcheck:
+         test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:3000/api/health || exit 1"]
+         interval: 15s
+         timeout: 5s
+         retries: 3
+         start_period: 5s
+
+     # Instance 2
+     app2:
+       image: ${APP_IMAGE:-ghcr.io/your-username/wargakonek:latest}
+       container_name: wargakonek-app-2
+       restart: unless-stopped
+       environment:
+         - NODE_ENV=production
+         - PORT=3000
+       healthcheck:
+         test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:3000/api/health || exit 1"]
+         interval: 15s
+         timeout: 5s
+         retries: 3
+         start_period: 5s
    ```
 
-3. **Salin File Konfigurasi ke Server**:
-   Pastikan file `compose.yaml` tersedia di direktori `$DEPLOY_PATH`.
-
-4. **Siapkan File `.env` di Server**:
-   Buat file `.env` di server (jangan commit ke Git):
-   ```env
+3. **Buat file `.env` di LXC**:
+   ```bash
+   cat << 'EOF' > /home/deployer/wargakonek/.env
    APP_IMAGE=ghcr.io/<your-github-username>/wargakonek:latest
    NODE_ENV=production
    PORT=3000
-   ```
-
-5. **Akses GHCR (Jika Package Private)**:
-   Jika repositori/paket container diset Private, lakukan login sekali di server menggunakan Personal Access Token (PAT) GitHub:
-   ```bash
-   echo "<GITHUB_PAT>" | docker login ghcr.io -u <GITHUB_USERNAME> --password-stdin
+   EOF
    ```
 
 ---
 
-### 5. Prosedur Rollback
+### E. Langkah 4: Konfigurasi GitHub Secrets untuk CI/CD
 
-Setiap deployment membuat tag berbasis commit SHA. Jika rilis terbaru mengalami masalah, Anda dapat melakukan rollback instan ke versi sebelumnya melalui server:
+Tambahkan Secrets berikut di GitHub (`Settings > Secrets and variables > Actions`):
+
+| Secret Name | Deskripsi | Contoh Nilai |
+|---|---|---|
+| `DEPLOY_HOST` | IP publik atau Domain LXC Proxmox (atau IP lokal jika self-hosted runner) | `192.168.1.50` / `pve.desa.id` |
+| `DEPLOY_USER` | Username deployment di LXC | `deployer` |
+| `DEPLOY_SSH_KEY` | Private SSH Key deployer (tanpa passphrase) | `-----BEGIN OPENSSH PRIVATE KEY-----...` |
+| `DEPLOY_PATH` | Lokasi direktori aplikasi di LXC | `/home/deployer/wargakonek` |
+
+---
+
+### F. Alur Otomatisasi CI/CD & Zero-Downtime Deployment
+
+```text
+[ Developer Push ke branch 'main' ]
+                │
+                ▼
+      [ GitHub Actions CI ]
+        ├── 1. npm ci & Lint
+        ├── 2. npm test (11 API Automated Tests)
+        ├── 3. Build Docker Image (Tag: wargakonek-ci:<sha>)
+        └── 4. Health Check Validasi Container
+                │
+                ▼ (Hanya saat CI Lulus)
+      [ GitHub Actions CD ]
+        ├── 1. Build & Push Image ke GHCR (ghcr.io/<owner>/wargakonek:<sha>)
+        ├── 2. SSH ke Proxmox LXC Container
+        ├── 3. docker compose -f compose.prod.yaml pull (Download image baru)
+        ├── 4. Zero-Downtime Rolling Update:
+        │       - Restart app1 -> Tunggu health check OK
+        │       - Restart app2 -> Tunggu health check OK
+        │       - Nginx Load Balancer otomatis mengalihkan request secara mulus
+        └── 5. Health Check Verifikasi via Load Balancer (http://<IP_LXC>/api/health)
+```
+
+---
+
+### G. Prosedur Rollback Cepat
+
+Jika versi baru yang dideploy bermasalah, Anda dapat melakukan rollback instan ke versi commit SHA stabil sebelumnya:
 
 ```bash
-cd /home/ubuntu/wargakonek
+cd /home/deployer/wargakonek
 
-# 1. Jalankan image dari commit SHA yang stabil sebelumnya
-APP_IMAGE=ghcr.io/<owner>/wargakonek:<previous-commit-sha> docker compose up -d
+# 1. Jalankan image dari SHA commit yang stabil
+APP_IMAGE=ghcr.io/<owner>/wargakonek:<previous-commit-sha> docker compose -f compose.prod.yaml up -d
 
-# 2. Verifikasi status container
-docker compose ps
-curl http://127.0.0.1:3000/api/health
+# 2. Verifikasi status Load Balancer & Containers
+docker compose -f compose.prod.yaml ps
+curl http://127.0.0.1/api/health
 ```
+
+
 

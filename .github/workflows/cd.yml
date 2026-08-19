@@ -91,22 +91,30 @@ jobs:
             
             # Export APP_IMAGE untuk docker compose
             export APP_IMAGE="$TARGET_IMAGE"
+
+            # Gunakan compose.prod.yaml jika tersedia, atau compose.yaml
+            COMPOSE_FILE="compose.yaml"
+            if [ -f "compose.prod.yaml" ]; then
+              COMPOSE_FILE="compose.prod.yaml"
+            fi
+            echo "Menggunakan file konfigurasi: $COMPOSE_FILE"
             
             echo "📥 [1/4] Menarik Docker Image dari GHCR..."
-            docker compose pull app
+            docker compose -f "$COMPOSE_FILE" pull
             
             echo "🔄 [2/4] Menjalankan container baru..."
-            docker compose up -d --remove-orphans app
+            docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
             
             echo "🧹 [3/4] Membersihkan unused/dangling images..."
             docker image prune -f || true
             
             echo "🏥 [4/4] Menjalankan Production Health Check..."
-            HEALTH_URL="http://127.0.0.1:3000/api/health"
+            HEALTH_URL="http://127.0.0.1/api/health"
             MAX_RETRIES=15
             RETRY_COUNT=0
             
-            until response=$(curl -s -w "\n%{http_code}" "$HEALTH_URL"); do
+            # Cek melalui port 80 (LB) atau fallback ke 3000
+            until response=$(curl -s -w "\n%{http_code}" "$HEALTH_URL") || response=$(curl -s -w "\n%{http_code}" "http://127.0.0.1:3000/api/health"); do
               RETRY_COUNT=$((RETRY_COUNT + 1))
               if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
                 echo "❌ Health check timed out / server tidak merespon setelah $MAX_RETRIES percobaan."
