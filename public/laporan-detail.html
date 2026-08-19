@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail & Riwayat Laporan — WargaKonek Desa Pajerukan</title>
+  <meta name="description" content="Pelacakan status dan riwayat tindak lanjut penanganan laporan pengaduan warga Desa Pajerukan.">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/pages.css">
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <div class="gov-topbar">
+    <div class="container gov-topbar-inner">
+      <div class="gov-topbar-info">
+        <span class="gov-topbar-item">
+          <i data-lucide="map-pin" class="icon icon-sm"></i>
+          Kec. Kalibagor, Kab. Banyumas, Jawa Tengah
+        </span>
+        <span class="gov-topbar-item">
+          <i data-lucide="clock" class="icon icon-sm"></i>
+          Jam Pelayanan: Senin - Jumat (08.00 - 15.00 WIB)
+        </span>
+      </div>
+      <div class="gov-topbar-auth">
+        <span class="role-badge">
+          <i data-lucide="user" class="icon icon-sm"></i>
+          <span class="current-role-label">Warga (Budi Santoso)</span>
+        </span>
+        <button class="role-switcher-btn" data-switch-role="admin">
+          <i data-lucide="shield-check" class="icon icon-sm"></i>
+          Masuk Admin
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="gov-header">
+    <div class="container gov-header-inner">
+      <a href="/" class="brand-wrapper">
+        <div class="brand-logo-emblem">PJ</div>
+        <div class="brand-text">
+          <span class="brand-title">WargaKonek Desa Pajerukan</span>
+          <span class="brand-subtitle">Portal Informasi & Pelayanan Masyarakat Kalibagor</span>
+        </div>
+      </a>
+      <div class="header-quick-action">
+        <a href="/laporan" class="btn btn-outline">
+          <i data-lucide="arrow-left" class="icon"></i>
+          Daftar Laporan
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navbar -->
+  <nav class="gov-navbar" aria-label="Navigasi Utama">
+    <div class="container gov-nav-inner">
+      <ul class="nav-links">
+        <li class="nav-item"><a href="/" class="nav-link">Beranda</a></li>
+        <li class="nav-item"><a href="/profil" class="nav-link">Profil Desa</a></li>
+        <li class="nav-item"><a href="/berita" class="nav-link">Berita</a></li>
+        <li class="nav-item"><a href="/agenda" class="nav-link">Agenda</a></li>
+        <li class="nav-item"><a href="/layanan" class="nav-link">Layanan</a></li>
+        <li class="nav-item"><a href="/informasi-publik" class="nav-link">Informasi Publik</a></li>
+        <li class="nav-item"><a href="/laporan" class="nav-link active">Laporan Warga</a></li>
+        <li class="nav-item"><a href="/kontak" class="nav-link">Kontak</a></li>
+        <li class="nav-item admin-only-link" style="display:none;"><a href="/admin" class="nav-link" style="color:var(--gov-accent-light);">Dashboard Admin</a></li>
+      </ul>
+      <button class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Buka Menu Navigasi">
+        <i data-lucide="menu" class="icon"></i>
+      </button>
+    </div>
+    <div class="mobile-menu-drawer" id="mobile-nav-drawer">
+      <ul class="mobile-nav-links">
+        <li><a href="/" class="nav-link">Beranda</a></li>
+        <li><a href="/profil" class="nav-link">Profil Desa</a></li>
+        <li><a href="/berita" class="nav-link">Berita</a></li>
+        <li><a href="/agenda" class="nav-link">Agenda</a></li>
+        <li><a href="/layanan" class="nav-link">Layanan</a></li>
+        <li><a href="/informasi-publik" class="nav-link">Informasi Publik</a></li>
+        <li><a href="/laporan" class="nav-link active">Laporan Warga</a></li>
+        <li><a href="/kontak" class="nav-link">Kontak</a></li>
+        <li class="admin-only-link" style="display:none;"><a href="/admin" class="nav-link">Dashboard Admin</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content" style="padding-top: 2rem;">
+    <div class="container">
+      
+      <div class="breadcrumbs">
+        <a href="/">Beranda</a>
+        <span class="separator">/</span>
+        <a href="/laporan">Laporan Warga</a>
+        <span class="separator">/</span>
+        <span id="breadcrumb-report-id" class="current">Memuat...</span>
+      </div>
+
+      <div id="report-detail-wrapper">
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Memuat rincian laporan dan riwayat timeline...</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Official Footer -->
+  <footer class="gov-footer">
+    <div class="container">
+      <div class="gov-footer-grid">
+        <div class="footer-brand">
+          <h3>WargaKonek Desa Pajerukan</h3>
+          <p>Portal resmi informasi publik dan sarana komunikasi aspirasi masyarakat Desa Pajerukan, Kecamatan Kalibagor, Kabupaten Banyumas, Jawa Tengah.</p>
+          <p style="font-size: 0.825rem; color: #79998E;">Kode Kemendagri: 33.02.13.2003 (Kecamatan Kalibagor)</p>
+        </div>
+        <div class="footer-section">
+          <h4>Navigasi Utama</h4>
+          <ul class="footer-links">
+            <li><a href="/profil">Profil Desa</a></li>
+            <li><a href="/berita">Kabar Berita</a></li>
+            <li><a href="/agenda">Agenda Kegiatan</a></li>
+            <li><a href="/layanan">Layanan Administrasi</a></li>
+            <li><a href="/informasi-publik">Transparansi Anggaran</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Aspirasi Warga</h4>
+          <ul class="footer-links">
+            <li><a href="/laporan">Daftar Laporan</a></li>
+            <li><a href="/laporan/buat">Form Pengaduan</a></li>
+            <li><a href="/kontak">Kontak Perangkat Desa</a></li>
+            <li><a href="/admin">Portal Admin Desa</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Kantor Desa Pajerukan</h4>
+          <ul class="footer-contact-info">
+            <li>
+              <i data-lucide="map-pin" class="icon icon-sm"></i>
+              <span>Jl. Raya Pajerukan No. 01, Kec. Kalibagor, Kab. Banyumas, Jawa Tengah 53191</span>
+            </li>
+            <li>
+              <i data-lucide="clock" class="icon icon-sm"></i>
+              <span>Senin - Jumat: 08.00 - 15.00 WIB</span>
+            </li>
+            <li>
+              <i data-lucide="mail" class="icon icon-sm"></i>
+              <span>kontak@pajerukan-banyumas.desa.id</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="gov-footer-bottom">
+        <span>&copy; 2026 Pemerintah Desa Pajerukan, Kecamatan Kalibagor, Kabupaten Banyumas. Hak Cipta Dilindungi.</span>
+        <span>Platform WargaKonek — Komunikasi Warga & Transparansi Desa</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/components.js"></script>
+  <script src="/js/pages/laporan-detail.js"></script>
+</body>
+</html>

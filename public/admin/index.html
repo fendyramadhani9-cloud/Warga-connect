@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Admin — WargaKonek Desa Pajerukan</title>
+  <meta name="description" content="Dashboard pengelolaan data statistik dan tindak lanjut laporan warga Desa Pajerukan.">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/pages.css">
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <div class="gov-topbar">
+    <div class="container gov-topbar-inner">
+      <div class="gov-topbar-info">
+        <span class="gov-topbar-item">
+          <i data-lucide="shield-check" class="icon icon-sm"></i>
+          Portal Administrator Pemerintah Desa Pajerukan
+        </span>
+      </div>
+      <div class="gov-topbar-auth">
+        <span class="role-badge" style="background-color: var(--gov-accent);">
+          <i data-lucide="shield" class="icon icon-sm"></i>
+          <span>Mode Admin Desa</span>
+        </span>
+        <button class="role-switcher-btn" data-switch-role="warga">
+          <i data-lucide="user" class="icon icon-sm"></i>
+          Kembali ke Portal Warga
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="gov-header">
+    <div class="container gov-header-inner">
+      <a href="/admin" class="brand-wrapper">
+        <div class="brand-logo-emblem" style="background-color: #1A365D; border-color: var(--gov-accent);">ADM</div>
+        <div class="brand-text">
+          <span class="brand-title">Panel Administrasi WargaKonek</span>
+          <span class="brand-subtitle">Pemerintah Desa Pajerukan — Kec. Kalibagor</span>
+        </div>
+      </a>
+      <div class="header-quick-action">
+        <a href="/" class="btn btn-outline btn-sm">
+          <i data-lucide="external-link" class="icon icon-sm"></i>
+          Lihat Portal Publik
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navbar -->
+  <nav class="gov-navbar" aria-label="Navigasi Admin">
+    <div class="container gov-nav-inner">
+      <ul class="nav-links">
+        <li class="nav-item"><a href="/admin" class="nav-link active">Dashboard</a></li>
+        <li class="nav-item"><a href="/admin/laporan" class="nav-link">Kelola Laporan Warga</a></li>
+        <li class="nav-item"><a href="/berita" class="nav-link">Portal Berita</a></li>
+        <li class="nav-item"><a href="/agenda" class="nav-link">Agenda Desa</a></li>
+        <li class="nav-item"><a href="/layanan" class="nav-link">Layanan Publik</a></li>
+      </ul>
+      <button class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Buka Menu Admin">
+        <i data-lucide="menu" class="icon"></i>
+      </button>
+    </div>
+    <div class="mobile-menu-drawer" id="mobile-nav-drawer">
+      <ul class="mobile-nav-links">
+        <li><a href="/admin" class="nav-link active">Dashboard</a></li>
+        <li><a href="/admin/laporan" class="nav-link">Kelola Laporan Warga</a></li>
+        <li><a href="/" class="nav-link">Kembali ke Beranda Publik</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content" style="padding-top: 2rem;">
+    <div class="container">
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.75rem;">
+        <div>
+          <h1 style="font-size: 1.75rem; color: var(--gov-primary-dark); margin-bottom: 0.25rem;">
+            Ringkasan Statistik Pengaduan
+          </h1>
+          <p style="font-size: 0.875rem; color: var(--text-muted);">
+            Rekapitulasi seluruh laporan masuk dari masyarakat Desa Pajerukan.
+          </p>
+        </div>
+        <a href="/admin/laporan" class="btn btn-primary">
+          <i data-lucide="list-checks" class="icon icon-sm"></i>
+          Buka Semua Laporan Warga
+        </a>
+      </div>
+
+      <!-- Stats Grid (6 Status Counters) -->
+      <div id="admin-stats-container" class="stats-grid">
+        <div class="stat-box"><div class="stat-num">-</div><div class="stat-label">Total Laporan</div></div>
+        <div class="stat-box"><div class="stat-num">-</div><div class="stat-label">Menunggu</div></div>
+        <div class="stat-box"><div class="stat-num">-</div><div class="stat-label">Ditinjau</div></div>
+        <div class="stat-box"><div class="stat-num">-</div><div class="stat-label">Diproses</div></div>
+        <div class="stat-box"><div class="stat-num">-</div><div class="stat-label">Selesai</div></div>
+        <div class="stat-box"><div class="stat-num">-</div><div class="stat-label">Ditolak</div></div>
+      </div>
+
+      <!-- Latest Reports Table -->
+      <div class="card" style="margin-top: 2rem;">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="display:inline-flex; align-items:center; gap:0.5rem;">
+            <i data-lucide="clock" class="icon icon-sm"></i>
+            Laporan Terbaru yang Perlu Ditindaklanjuti
+          </span>
+          <a href="/admin/laporan" class="btn btn-sm btn-outline">Lihat Selengkapnya</a>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          <div class="table-responsive">
+            <table class="gov-table">
+              <thead>
+                <tr>
+                  <th>ID Laporan</th>
+                  <th>Judul Permasalahan</th>
+                  <th>Kategori</th>
+                  <th>Pelapor</th>
+                  <th>Tanggal</th>
+                  <th>Status</th>
+                  <th style="text-align:right;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="admin-recent-reports-body">
+                <tr>
+                  <td colspan="7" style="text-align:center; padding:2rem;">Memuat daftar laporan...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="gov-footer">
+    <div class="container">
+      <div class="gov-footer-bottom">
+        <span>&copy; 2026 Panel Administrator WargaKonek — Pemerintah Desa Pajerukan, Kec. Kalibagor, Kab. Banyumas.</span>
+        <span>Akses Terautentikasi Petugas Pelayanan Desa</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/components.js"></script>
+  <script src="/js/pages/admin-dashboard.js"></script>
+</body>
+</html>

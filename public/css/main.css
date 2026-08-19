@@ -1,0 +1,192 @@
+/* ==========================================================================
+   WARGAKONEK DESA PAJERUKAN - MAIN DESIGN SYSTEM
+   Inspirasi: Portal Resmi Pemerintahan Daerah & Editorial Berita
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+:root {
+  /* Palet Warna Pemerintahan Resmi */
+  --gov-primary: #0F4C3A;        /* Deep Forest Green - Utama */
+  --gov-primary-dark: #0A3327;   /* Hover & Active */
+  --gov-primary-light: #1A6B53;  /* Sub-accent */
+  --gov-primary-soft: #EBF4F0;   /* Background badge & highlight */
+  
+  --gov-accent: #B45309;         /* Amber/Gold - Aksen Resmi */
+  --gov-accent-light: #FEF3C7;   /* Amber soft background */
+  
+  /* Netral & Permukaan */
+  --bg-body: #F8FAF9;
+  --bg-surface: #FFFFFF;
+  --bg-subtle: #F1F5F3;
+  --bg-muted: #E2E8F0;
+  
+  /* Tipografi */
+  --text-main: #1E293B;          /* Slate 800 */
+  --text-muted: #64748B;         /* Slate 500 */
+  --text-light: #94A3B8;         /* Slate 400 */
+  --text-inverse: #FFFFFF;
+  
+  /* Garis & Border */
+  --border-color: #E2E8F0;
+  --border-subtle: #CBD5E1;
+  --border-focus: #0F4C3A;
+  
+  /* Status Workflow Laporan */
+  --status-menunggu-bg: #FEF3C7;
+  --status-menunggu-text: #92400E;
+  --status-menunggu-border: #FCD34D;
+  
+  --status-ditinjau-bg: #E0F2FE;
+  --status-ditinjau-text: #075985;
+  --status-ditinjau-border: #BAE6FD;
+  
+  --status-diproses-bg: #EDE9FE;
+  --status-diproses-text: #5B21B6;
+  --status-diproses-border: #DDD6FE;
+  
+  --status-selesai-bg: #DCFCE7;
+  --status-selesai-text: #166534;
+  --status-selesai-border: #BBF7D0;
+  
+  --status-ditolak-bg: #FEE2E2;
+  --status-ditolak-text: #991B1B;
+  --status-ditolak-border: #FECACA;
+
+  /* Font Families */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: 'Lora', Georgia, 'Times New Roman', serif;
+
+  /* Spasi & Ukuran */
+  --container-max: 1200px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  
+  /* Shadow Sederhana & Formal */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+
+  --transition-fast: 0.15s ease-in-out;
+  --transition-normal: 0.25s ease-in-out;
+}
+
+/* CSS Reset & Baseline */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-body);
+  color: var(--text-main);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: var(--gov-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--gov-primary-dark);
+}
+
+/* Typography Hierarchy */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.25;
+  margin-bottom: 0.5rem;
+}
+
+h1 { font-size: 2.25rem; letter-spacing: -0.02em; }
+h2 { font-size: 1.75rem; letter-spacing: -0.01em; }
+h3 { font-size: 1.35rem; }
+h4 { font-size: 1.15rem; }
+h5 { font-size: 1rem; }
+
+p {
+  margin-bottom: 1rem;
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+/* Utility Containers */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.container-narrow {
+  width: 100%;
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.main-content {
+  flex: 1 0 auto;
+  padding-bottom: 3.5rem;
+}
+
+/* Lucide Icon Helpers */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  stroke-width: 2;
+  vertical-align: -0.15em;
+}
+
+.icon-sm { width: 0.95rem; height: 0.95rem; }
+.icon-lg { width: 1.5rem; height: 1.5rem; }
+
+/* Grid Helper */
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 992px) {
+  .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}

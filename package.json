@@ -1,0 +1,24 @@
+{
+  "name": "wargakonek-desa-pajerukan",
+  "version": "1.0.0",
+  "description": "Portal Informasi dan Komunikasi Masyarakat Desa Pajerukan, Kec. Kalibagor, Kab. Banyumas",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node server/server.js"
+  },
+  "keywords": [
+    "desa",
+    "pajerukan",
+    "banyumas",
+    "wargakonek",
+    "pengaduan-warga",
+    "portal-desa"
+  ],
+  "author": "Pemerintah Desa Pajerukan",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}

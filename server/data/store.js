@@ -1,0 +1,495 @@
+const fs = require('fs');
+const path = require('path');
+
+const DB_PATH = path.join(__dirname, 'database.json');
+
+const INITIAL_DATA = {
+  categories: [
+    "Infrastruktur Umum",
+    "Kebersihan & Lingkungan",
+    "Keamanan & Ketertiban",
+    "Fasilitas Umum",
+    "Pelayanan Masyarakat",
+    "Sosial & Kesejahteraan",
+    "Kesehatan",
+    "Pendidikan",
+    "Administrasi Desa",
+    "Transportasi",
+    "Penerangan Jalan",
+    "Drainase & Saluran Air",
+    "Ekonomi & UMKM",
+    "Pertanian",
+    "Bantuan Sosial",
+    "Lainnya"
+  ],
+  announcements: [
+    {
+      id: "news-001",
+      title: "Musyawarah Perencanaan Pembangunan Desa (Musrenbangdes) Pajerukan Tahun Anggaran 2026",
+      slug: "musrenbangdes-pajerukan-ta-2026",
+      category: "Pemerintahan",
+      date: "2026-08-14",
+      author: "Sekretariat Desa Pajerukan",
+      summary: "Pemerintah Desa Pajerukan bersama BPD, tokoh masyarakat, dan perwakilan RW/RT menyelenggarakan Musrenbangdes guna merumuskan prioritas pembangunan desa tahun 2026.",
+      content: `Pemerintah Desa Pajerukan, Kecamatan Kalibagor, Kabupaten Banyumas menggelar Musyawarah Perencanaan Pembangunan Desa (Musrenbangdes) bertempat di Balai Desa Pajerukan pada hari Rabu, 14 Agustus 2026.
+
+Kegiatan ini dihadiri oleh jajaran Pemerintah Desa, Badan Permusyawaratan Desa (BPD), Lembaga Pemberdayaan Masyarakat Desa (LPMD), Tim Penggerak PKK, Ketua RT/RW se-Desa Pajerukan, serta perwakilan Forkopimcam Kalibagor.
+
+Fokus pembahasan Musrenbangdes tahun ini meliputi:
+1. Peningkatan kualitas infrastruktur jalan lingkungan dan drainase pertanian di wilayah RW 01 hingga RW 04.
+2. Penguatan ketahanan pangan desa melalui optimalisasi kelompok tani dan sistem irigasi tersier.
+3. Pemberdayaan UMKM lokal dan kelompok wanita tani (KWT) dalam pengolahan hasil perkebunan dan pertanian.
+4. Program percepatan penurunan stunting dan peningkatan sarana posyandu balita serta lansia.
+
+Kepala Desa Pajerukan dalam sambutannya menyampaikan apresiasi kepada seluruh elemen warga yang telah proaktif memberikan usulan aspirasi dari tingkat musyawarah dusun (Musdus). Dokumen RKPDes yang telah disepakati akan menjadi landasan resmi dalam penyusunan APBDes Tahun Anggaran 2026.`,
+      image: "https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=1200&q=80",
+      featured: true,
+      views: 342
+    },
+    {
+      id: "news-002",
+      title: "Pembangunan Normalisasi Saluran Irigasi Dusun Pajerukan RW 02 Resmi Selesai",
+      slug: "normalisasi-saluran-irigasi-dusun-pajerukan-rw-02",
+      category: "Pembangunan",
+      date: "2026-08-10",
+      author: "Kaur Pembangunan Desa Pajerukan",
+      summary: "Program normalisasi dan pemasangan talud saluran irigasi sepanjang 350 meter telah rampung untuk mendukung pengairan 25 hektar sawah produktif.",
+      content: `Pemerintah Desa Pajerukan bersama warga kelompok tani 'Maju Makmur' telah merampungkan kegiatan padat karya tunai desa (PKTD) berupa normalisasi dan penguatan talud saluran irigasi tersier di Blok Sawah RW 02.
+
+Pekerjaan fisik sepanjang 350 meter ini didanai melalui pos Dana Desa Tahap II Tahun 2026. Pembangunan ini bertujuan untuk mengatasi pendangkalan dan rembesan air yang selama ini kerap mengurangi pasokan air menuju lahan persawahan warga saat musim tanam kedua.
+
+Diharapkan dengan selesainya saluran irigasi ini, produktivitas panen padi warga Desa Pajerukan dapat semakin stabil dan mencegah genangan berlebih saat curah hujan tinggi.`,
+      image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=80",
+      featured: false,
+      views: 218
+    },
+    {
+      id: "news-003",
+      title: "Jadwal Pelayanan Posyandu Balita & Posbindu Lansia Terintegrasi Bulan Agustus 2026",
+      slug: "posyandu-balita-posbindu-lansia-agustus-2026",
+      category: "Kesehatan",
+      date: "2026-08-08",
+      author: "Bidan Desa & Pokja IV PKK",
+      summary: "Pemerintah Desa Pajerukan mengumumkan jadwal rutin pelayanan kesehatan posyandu, imunisasi, dan skrining penyakit tidak menular.",
+      content: `Pemerintah Desa Pajerukan bersama Bidan Desa dan Kader Kesehatan mengumumkan jadwal pelaksanaan Posyandu Balita dan Posbindu Penyakit Tidak Menular (PTM) untuk seluruh pos RW di Desa Pajerukan selama bulan Agustus 2026.
+
+Layanan yang disediakan meliputi:
+- Penimbangan berat badan dan pengukuran tinggi badan balita
+- Pemberian vitamin A dan imunisasi dasar lengkap
+- Penyuluhan gizi seimbang untuk pencegahan stunting
+- Pemeriksaan tekanan darah, gula darah, dan kolesterol bagi warga pra-lansia dan lansia
+
+Warga diimbau untuk membawa Buku KIA dan Kartu Identitas saat datang ke posyandu terdekat di lingkungan RW masing-masing sesuai jadwal yang telah ditentukan.`,
+      image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1000&q=80",
+      featured: false,
+      views: 185
+    },
+    {
+      id: "news-004",
+      title: "Penyaluran Bantuan Langsung Tunai Dana Desa (BLT-DD) Triwulan III Tahun 2026",
+      slug: "penyaluran-blt-dana-desa-triwulan-iii-2026",
+      category: "Masyarakat",
+      date: "2026-08-04",
+      author: "Kaur Keuangan Desa Pajerukan",
+      summary: "Sebanyak 45 Keluarga Penerima Manfaat (KPM) telah menerima penyaluran bantuan tunai secara transparan dan tertib di Pendopo Desa.",
+      content: `Sebanyak 45 Keluarga Penerima Manfaat (KPM) di Desa Pajerukan menerima penyaluran Bantuan Langsung Tunai Dana Desa (BLT-DD) untuk periode bulan Juli, Agustus, dan September 2026 di Pendopo Balai Desa Pajerukan.
+
+Penyaluran dilakukan secara transparan dengan dihadiri oleh Babinsa Koramil Kalibagor, Bhabinkamtibmas Polsek Kalibagor, serta Badan Permusyawaratan Desa (BPD). Kriteria penerima telah melalui mekanisme verifikasi dan Musdesus sesuai dengan peraturan perundang-undangan yang berlaku.`,
+      image: "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?auto=format&fit=crop&w=1000&q=80",
+      featured: false,
+      views: 160
+    },
+    {
+      id: "news-005",
+      title: "Pelatihan Pengemasan dan Pemasaran Digital Bagi Pelaku UMKM Desa Pajerukan",
+      slug: "pelatihan-umkm-pemasaran-digital-desa-pajerukan",
+      category: "Kegiatan Desa",
+      date: "2026-07-28",
+      author: "Pemberdayaan Masyarakat Desa Pajerukan",
+      summary: "Mendorong daya saing produk lokal gula kelapa, keripik tempe, dan anyaman bambu melalui kemasan higienis dan toko daring.",
+      content: `Guna mendongkrak perekonomian lokal, Pemerintah Desa Pajerukan mengadakan bimbingan teknis bagi 30 perajin dan pemilik usaha mikro kecil dan menengah (UMKM) se-Desa Pajerukan.
+
+Materi pelatihan difokuskan pada standarisasi kemasan ramah lingkungan, pengurusan izin edar P-IRT dan sertifikasi halal, serta teknik pemasaran sederhana menggunakan marketplace dan media sosial.`,
+      image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1000&q=80",
+      featured: false,
+      views: 142
+    },
+    {
+      id: "news-006",
+      title: "Pengumuman: Perekaman KTP Elektronik dan Pemutakhiran Data Kartu Keluarga",
+      slug: "pengumuman-ktp-el-pemutakhiran-kk-desa-pajerukan",
+      category: "Pengumuman",
+      date: "2026-07-22",
+      author: "Seksi Pelayanan Desa Pajerukan",
+      summary: "Layanan jemput bola administrasi kependudukan bekerja sama dengan Disdukcapil Kabupaten Banyumas di Aula Kantor Desa.",
+      content: `Diberitahukan kepada seluruh warga Desa Pajerukan khususnya pemilih pemula usia 16-17 tahun dan keluarga yang memiliki perubahan data (kelahiran, kepindahan, perkawinan), bahwa Pemerintah Desa Pajerukan memfasilitasi pelayanan administrasi kependudukan terpadu.
+
+Warga dimohon menyiapkan fotokopi Kartu Keluarga, akta kelahiran, serta surat pengantar RT/RW untuk kelancaran proses validasi data.`,
+      image: "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=1000&q=80",
+      featured: false,
+      views: 290
+    }
+  ],
+  events: [
+    {
+      id: "event-001",
+      title: "Peringatan Hari Kemerdekaan RI Ke-81 & Jalan Sehat Warga Desa Pajerukan",
+      date: "2026-08-23",
+      time: "06.30 - 11.30 WIB",
+      location: "Lapangan Sepakbola Desa Pajerukan",
+      description: "Jalan sehat kebersamaan keluarga, pembagian doorprize gotong royong, dan pentas seni tradisional kuda lumping warga.",
+      organizer: "Karang Taruna Tunas Harapan & Panitia HUT RI Desa"
+    },
+    {
+      id: "event-002",
+      title: "Kerja Bakti Massal Bersih Lingkungan & Saluran Air Dusun II",
+      date: "2026-08-28",
+      time: "07.00 - 10.00 WIB",
+      location: "Lingkungan RW 03 dan RW 04 Desa Pajerukan",
+      description: "Gotong royong membersihkan sedimentasi drainase, pemangkasan ranting pohon rawan tumbang, dan pemberantasan sarang nyamuk (PSN).",
+      organizer: "Pemerintah Desa & Pengurus RT/RW"
+    },
+    {
+      id: "event-003",
+      title: "Pertemuan Rutin Gapoktan: Persiapan Pola Tanam Musim Hujan 2026/2027",
+      date: "2026-09-05",
+      time: "19.30 - 21.30 WIB",
+      location: "Balai Pertemuan Kelompok Tani Dusun I",
+      description: "Koordinasi alokasi pupuk bersubsidi, jadwal buka tutup pintu air bendung, dan penyuluhan varietas benih padi unggul bersama PPL Pertanian Kalibagor.",
+      organizer: "Gapoktan Pajerukan & BPP Kalibagor"
+    },
+    {
+      id: "event-004",
+      title: "Musyawarah Desa Khusus (Musdesus) Verifikasi Data Kesejahteraan Sosial",
+      date: "2026-09-12",
+      time: "09.00 - 12.00 WIB",
+      location: "Pendopo Kantor Desa Pajerukan",
+      description: "Verifikasi faktual data terpadu kesejahteraan sosial (DTKS) bersama BPD, pendamping PKH, dan seluruh ketua RT/RW.",
+      organizer: "Pemerintah Desa Pajerukan"
+    }
+  ],
+  services: [
+    {
+      id: "srv-001",
+      code: "SKTM",
+      name: "Surat Keterangan Tidak Mampu",
+      category: "Kesejahteraan Sosial",
+      duration: "1 Hari Kerja (Gratis)",
+      requirements: [
+        "Fotokopi KTP Pemohon / Wali",
+        "Fotokopi Kartu Keluarga",
+        "Surat Pengantar dari Ketua RT dan RW setempat",
+        "Surat Pernyataan Keperluan (Beasiswa, Pengurangan Biaya RS, dll)"
+      ],
+      description: "Surat keterangan resmi dari desa untuk keperluan permohonan beasiswa, keringanan biaya pendidikan, atau jaminan kesehatan daerah."
+    },
+    {
+      id: "srv-002",
+      code: "SK-DOMISILI",
+      name: "Surat Keterangan Domisili Warga / Usaha",
+      category: "Administrasi Kependudukan",
+      duration: "1 Hari Kerja (Gratis)",
+      requirements: [
+        "Fotokopi KTP Pemohon",
+        "Fotokopi Kartu Keluarga",
+        "Surat Pengantar RT/RW",
+        "Foto tempat usaha (khusus domisili usaha mikro/kecil)"
+      ],
+      description: "Layanan penerbitan surat keterangan domisili tempat tinggal bagi pendatang baru maupun surat keterangan lokasi operasional usaha."
+    },
+    {
+      id: "srv-003",
+      code: "SK-USAHA",
+      name: "Surat Keterangan Usaha (SKU)",
+      category: "Ekonomi & Usaha",
+      duration: "1 Hari Kerja (Gratis)",
+      requirements: [
+        "Fotokopi KTP Pemilik Usaha",
+        "Fotokopi Kartu Keluarga",
+        "Surat Pengantar RT/RW yang menerangkan jenis usaha",
+        "Bukti lunas PBB tahun berjalan"
+      ],
+      description: "Keterangan legalitas usaha di wilayah Desa Pajerukan untuk persyaratan pengajuan KUR/Kredit perbankan maupun kemitraan."
+    },
+    {
+      id: "srv-004",
+      code: "PENGANTAR-NIKAH",
+      name: "Surat Pengantar Pernikahan (Model N1 - N4)",
+      category: "Administrasi Kependudukan",
+      duration: "2 Hari Kerja (Gratis)",
+      requirements: [
+        "Fotokopi KTP dan KK Calon Pengantin & Orang Tua",
+        "Fotokopi Akta Kelahiran dan Ijazah Terakhir",
+        "Pas foto ukuran 2x3 dan 4x6 latar biru (masing-masing 4 lembar)",
+        "Surat Pengantar RT/RW",
+        "Akta Cerai / Kematian (jika berstatus duda/janda)"
+      ],
+      description: "Penerbitan dokumen pengantar model N untuk pendaftaran pernikahan di Kantor Urusan Agama (KUA) Kalibagor."
+    },
+    {
+      id: "srv-005",
+      code: "SK-KEMATIAN",
+      name: "Surat Keterangan Kematian",
+      category: "Kependudukan & Catatan Sipil",
+      duration: "1 Hari Kerja (Gratis)",
+      requirements: [
+        "Surat Keterangan Kematian dari Dokter/Rumah Sakit/Bidan",
+        "Fotokopi KTP dan KK Almarhum/Almarhumah",
+        "Fotokopi KTP Pelapor (Ahli Waris) & 2 Saksi",
+        "Surat Pengantar RT/RW"
+      ],
+      description: "Penerbitan surat kematian desa sebagai dokumen dasar penerbitan Akta Kematian resmi di Disdukcapil."
+    },
+    {
+      id: "srv-006",
+      code: "PENGANTAR-PINDAH",
+      name: "Surat Pengantar Pindah Domisili (SKPWNI)",
+      category: "Administrasi Kependudukan",
+      duration: "1 - 2 Hari Kerja (Gratis)",
+      requirements: [
+        "Kartu Keluarga Asli dan KTP Asli pemohon pindah",
+        "Surat Pengantar RT/RW asal",
+        "Alamat lengkap tujuan kepindahan beserta kode pos",
+        "Pas foto 3x4 (2 lembar)"
+      ],
+      description: "Pengantar proses perpindahan penduduk antar desa, kecamatan, maupun antar kabupaten/provinsi."
+    }
+  ],
+  publicInfo: [
+    {
+      id: "pub-001",
+      title: "Ringkasan Laporan Realisasi APBDes Desa Pajerukan Semester I TA 2026",
+      category: "Transparansi Anggaran",
+      date: "2026-07-15",
+      fileType: "PDF",
+      fileSize: "1.4 MB",
+      description: "Publikasi transparansi pendapatan asli desa, transfer dana desa, alokasi dana desa (ADD), dan belanja bidang pembangunan serta pemberdayaan masyarakat.",
+      downloadUrl: "#"
+    },
+    {
+      id: "pub-002",
+      title: "Peraturan Desa Pajerukan Nomor 03 Tahun 2025 tentang Rencana Kerja Pemerintah Desa (RKPDes) 2026",
+      category: "Peraturan Desa",
+      date: "2025-12-28",
+      fileType: "PDF",
+      fileSize: "3.2 MB",
+      description: "Dokumen regulasi desa yang memuat rencana kerja arah pembangunan, prioritas fisik dan non fisik di Desa Pajerukan.",
+      downloadUrl: "#"
+    },
+    {
+      id: "pub-003",
+      title: "Data Transparansi Penerima Manfaat BLT-Dana Desa Tahun Anggaran 2026",
+      category: "Bantuan Sosial",
+      date: "2026-06-30",
+      fileType: "PDF",
+      fileSize: "850 KB",
+      description: "Daftar rekapitulasi keluarga penerima manfaat hasil Musdesus verifikasi faktual kemiskinan ekstrem.",
+      downloadUrl: "#"
+    },
+    {
+      id: "pub-004",
+      title: "Peta Rencana Tata Ruang dan Inventaris Aset Tanah Kas Desa Pajerukan",
+      category: "Aset & Wilayah",
+      date: "2025-11-20",
+      fileType: "PDF",
+      fileSize: "4.8 MB",
+      description: "Peta batas dusun, wilayah pertanian, fasilitas umum, dan register tanah bengkok desa.",
+      downloadUrl: "#"
+    }
+  ],
+  reports: [
+    {
+      id: "LAP-2026-0801",
+      title: "Lampu Penerangan Jalan Umum Mati di Dekat Jembatan Penghubung RT 03/RW 02",
+      category: "Penerangan Jalan",
+      reporterName: "Budi Santoso",
+      reporterContact: "081234567890",
+      reporterId: "warga-01",
+      location: "Jalan Utama RT 03 RW 02, Dekat Jembatan Sungai Kecil Desa Pajerukan",
+      description: "Lampu penerangan jalan utama mati total sejak 3 malam yang lalu. Kondisi jalan cukup menikung dan gelap sehingga membahayakan pengendara motor yang melintas saat malam hari.",
+      photoUrl: "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=800&q=80",
+      status: "Diproses",
+      createdAt: "2026-08-16T19:30:00.000Z",
+      updatedAt: "2026-08-18T10:15:00.000Z",
+      history: [
+        {
+          timestamp: "2026-08-16T19:30:00.000Z",
+          status: "Menunggu",
+          note: "Laporan berhasil dibuat oleh warga dan masuk ke sistem antrean desa."
+        },
+        {
+          timestamp: "2026-08-17T08:45:00.000Z",
+          status: "Ditinjau",
+          note: "Laporan telah diverifikasi oleh staf pelayanan umum. Lokasi titik lampu telah dicatat."
+        },
+        {
+          timestamp: "2026-08-18T10:15:00.000Z",
+          status: "Diproses",
+          note: "Tim teknis pemeliharaan sarana desa telah diterjunkan untuk penggantian bohlam dan pengecekan kabel induk."
+        }
+      ]
+    },
+    {
+      id: "LAP-2026-0802",
+      title: "Saluran Drainase Tersumbat Sampah dan Sedimen di Depan Pos Ronda RW 01",
+      category: "Drainase & Saluran Air",
+      reporterName: "Siti Rahmawati",
+      reporterContact: "085712349988",
+      reporterId: "warga-02",
+      location: "Depan Pos Kamling RT 02 RW 01 Desa Pajerukan",
+      description: "Saluran air tertutup endapan lumpur tebal dan sampah dedaunan, sehingga saat hujan lebat air meluap menggenangi halaman rumah warga.",
+      photoUrl: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80",
+      status: "Selesai",
+      createdAt: "2026-08-12T14:10:00.000Z",
+      updatedAt: "2026-08-15T11:00:00.000Z",
+      history: [
+        {
+          timestamp: "2026-08-12T14:10:00.000Z",
+          status: "Menunggu",
+          note: "Laporan dibuat oleh pelapor."
+        },
+        {
+          timestamp: "2026-08-13T09:00:00.000Z",
+          status: "Ditinjau",
+          note: "Admin telah memverifikasi laporan dan mengoordinasikan dengan Kepala Dusun I."
+        },
+        {
+          timestamp: "2026-08-14T08:00:00.000Z",
+          status: "Diproses",
+          note: "Kegiatan pembersihan drainase dimasukkan ke jadwal kerja bakti desa bersama warga RT 02."
+        },
+        {
+          timestamp: "2026-08-15T11:00:00.000Z",
+          status: "Selesai",
+          note: "Saluran air sepanjang 60 meter telah dikeruk dan air sudah mengalir lancar kembali."
+        }
+      ]
+    },
+    {
+      id: "LAP-2026-0803",
+      title: "Permohonan Perbaikan Jalan Berlubang di Akses Menuju Pemakaman Umum",
+      category: "Infrastruktur Umum",
+      reporterName: "Budi Santoso",
+      reporterContact: "081234567890",
+      reporterId: "warga-01",
+      location: "Jalan Makam Dusun II RT 04 RW 03",
+      description: "Terdapat lubang cukup dalam akibat erosi air hujan di tanjakan jalan makam. Perlu penambalan batu koral atau semen agar tidak licin dan aman dilalui mobil ambulans maupun pejalan kaki.",
+      photoUrl: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80",
+      status: "Ditinjau",
+      createdAt: "2026-08-17T11:20:00.000Z",
+      updatedAt: "2026-08-18T09:00:00.000Z",
+      history: [
+        {
+          timestamp: "2026-08-17T11:20:00.000Z",
+          status: "Menunggu",
+          note: "Laporan telah masuk ke sistem pengaduan desa."
+        },
+        {
+          timestamp: "2026-08-18T09:00:00.000Z",
+          status: "Ditinjau",
+          note: "Laporan telah diperiksa oleh Kaur Pembangunan dan sedang diukur estimasi volume material pengerasan."
+        }
+      ]
+    },
+    {
+      id: "LAP-2026-0804",
+      title: "Penumpukan Sampah Plastik Liar di Pinggir Tanggul Irigasi Blok Barat",
+      category: "Kebersihan & Lingkungan",
+      reporterName: "Ahmad Fauzi",
+      reporterContact: "082198765432",
+      reporterId: "warga-03",
+      location: "Tanggul Irigasi Perbatasan Desa Pajerukan - Srowot",
+      description: "Oknum tidak bertanggung jawab membuang karung berisi sampah rumah tangga di sempadan saluran air. Menimbulkan bau tidak sedap dan mencemari pengairan sawah.",
+      photoUrl: "https://images.unsplash.com/photo-1605600659908-0ef719419d41?auto=format&fit=crop&w=800&q=80",
+      status: "Menunggu",
+      createdAt: "2026-08-19T08:15:00.000Z",
+      updatedAt: "2026-08-19T08:15:00.000Z",
+      history: [
+        {
+          timestamp: "2026-08-19T08:15:00.000Z",
+          status: "Menunggu",
+          note: "Laporan baru diterima dan menunggu peninjauan petugas admin desa."
+        }
+      ]
+    },
+    {
+      id: "LAP-2026-0805",
+      title: "Laporan Permintaan Pengaspalan Jalan Swasta Kompleks Perumahan Pribadi",
+      category: "Infrastruktur Umum",
+      reporterName: "Joko Supriyanto",
+      reporterContact: "081399887766",
+      reporterId: "warga-04",
+      location: "Kavling Tanah Pribadi Blok C",
+      description: "Mohon bantuan pengaspalan jalan akses dalam kavling perumahan milik perseorangan.",
+      photoUrl: "https://images.unsplash.com/photo-1590674899484-d5640e854abe?auto=format&fit=crop&w=800&q=80",
+      status: "Ditolak",
+      createdAt: "2026-08-10T16:00:00.000Z",
+      updatedAt: "2026-08-11T13:30:00.000Z",
+      history: [
+        {
+          timestamp: "2026-08-10T16:00:00.000Z",
+          status: "Menunggu",
+          note: "Laporan masuk ke sistem."
+        },
+        {
+          timestamp: "2026-08-11T09:00:00.000Z",
+          status: "Ditinjau",
+          note: "Pemeriksaan legalitas lokasi dan status kepemilikan jalan."
+        },
+        {
+          timestamp: "2026-08-11T13:30:00.000Z",
+          status: "Ditolak",
+          note: "Laporan tidak dapat diproses menggunakan Dana Desa karena lokasi jalan masih berstatus hak milik pribadi/swasta dan belum diserahkan sebagai prasarana umum aset desa."
+        }
+      ]
+    }
+  ],
+  contacts: [
+    {
+      id: "msg-001",
+      name: "Drs. Hendro Wibowo",
+      contact: "hendro.w@gmail.com / 081288990011",
+      subject: "Apresiasi Pelayanan Surat Kependudukan Desa",
+      message: "Terima kasih kepada petugas pelayanan kantor desa yang telah melayani permohonan surat pengantar dengan cepat dan ramah.",
+      createdAt: "2026-08-15T10:00:00.000Z"
+    }
+  ]
+};
+
+// Initialize DB file if not present
+function initDb() {
+  try {
+    if (!fs.existsSync(DB_PATH)) {
+      fs.writeFileSync(DB_PATH, JSON.stringify(INITIAL_DATA, null, 2), 'utf-8');
+    }
+  } catch (err) {
+    console.error('Error initializing database file:', err);
+  }
+}
+
+function readDb() {
+  try {
+    initDb();
+    const data = fs.readFileSync(DB_PATH, 'utf-8');
+    return JSON.parse(data);
+  } catch (err) {
+    console.error('Error reading database file:', err);
+    return INITIAL_DATA;
+  }
+}
+
+function writeDb(data) {
+  try {
+    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
+    return true;
+  } catch (err) {
+    console.error('Error writing database file:', err);
+    return false;
+  }
+}
+
+module.exports = {
+  readDb,
+  writeDb,
+  INITIAL_DATA
+};
