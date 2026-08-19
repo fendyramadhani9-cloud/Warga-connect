@@ -4,7 +4,7 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Set environment to production
+# Set production environment defaults
 ENV NODE_ENV=production
 ENV PORT=3000
 
@@ -15,17 +15,17 @@ COPY package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
 # Copy application source code (server & public assets)
-COPY server/ ./server/
-COPY public/ ./public/
+COPY --chown=node:node server/ ./server/
+COPY --chown=node:node public/ ./public/
 
-# Change file ownership to non-root node user
+# Ensure directory ownership belongs to non-root node user
 RUN chown -R node:node /app
 
 # Switch to non-root user
 USER node
 
-# Expose the application port
+# Expose application port
 EXPOSE 3000
 
-# Start the application
+# Start application
 CMD ["node", "server/server.js"]
