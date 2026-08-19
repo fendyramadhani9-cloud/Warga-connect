@@ -86,15 +86,17 @@ app.use(express.static(publicDir));
 app.use(notFoundHandler);
 app.use(globalErrorHandler);
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`====================================================`);
-  console.log(`  WARGAKONEK DESA PAJERUKAN - SERVER AKTIF`);
-  console.log(`  Kec. Kalibagor, Kab. Banyumas, Jawa Tengah`);
-  console.log(`  URL Portal: http://localhost:${PORT}`);
-  console.log(`  URL Admin : http://localhost:${PORT}/admin`);
-  console.log(`  API Health: http://localhost:${PORT}/api/health`);
-  console.log(`====================================================`);
-});
+// Start Server if executed directly
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`====================================================`);
+    console.log(`  WARGAKONEK DESA PAJERUKAN - SERVER AKTIF`);
+    console.log(`  Kec. Kalibagor, Kab. Banyumas, Jawa Tengah`);
+    console.log(`  URL Portal: http://localhost:${PORT}`);
+    console.log(`  URL Admin : http://localhost:${PORT}/admin`);
+    console.log(`  API Health: http://localhost:${PORT}/api/health`);
+    console.log(`====================================================`);
+  });
+}
 
 module.exports = app;
